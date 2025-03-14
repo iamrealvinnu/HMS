@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ooty-brown: #96332C;
+  --ooty-brown-light: #B54B42;
+  --ooty-gold: #C8A97E;
+  --ooty-beige: #FDF7F2;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--ooty-beige);
+  }
+}
+
+@layer components {
+  /* Carousel Styles */
+  .carousel {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+
+  .carousel-item {
+    min-width: 100%;
+    position: relative;
+  }
+
+  .carousel-item img {
+    width: 100%;
+    height: 600px;
+    object-fit: cover;
+  }
+
+  /* Custom Button Styles */
+  .btn-primary {
+    @apply bg-ooty-brown text-white px-6 py-2 rounded-full transition-colors duration-300;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--ooty-brown-light);
+  }
+
+  .btn-outline {
+    @apply border-2 border-ooty-brown text-ooty-brown px-6 py-2 rounded-full transition-colors duration-300;
+  }
+
+  .btn-outline:hover {
+    background-color: var(--ooty-brown);
+    color: white;
+  }
+}
+
+@layer utilities {
+  .bg-ooty-brown {
+    background-color: var(--ooty-brown);
+  }
+
+  .bg-ooty-brown-light {
+    background-color: var(--ooty-brown-light);
+  }
+
+  .bg-ooty-gold {
+    background-color: var(--ooty-gold);
+  }
+
+  .bg-ooty-beige {
+    background-color: var(--ooty-beige);
+  }
+
+  .text-ooty-brown {
+    color: var(--ooty-brown);
+  }
+
+  .text-ooty-gold {
+    color: var(--ooty-gold);
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
