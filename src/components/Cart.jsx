@@ -2,11 +2,18 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 import { useCart } from './CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const navigate = useNavigate();
 
   if (!isCartOpen) return null;
+
+  const handleCheckout = () => {
+    setIsCartOpen(false);
+    navigate('/checkout');
+  };
 
   return (
     <AnimatePresence>
@@ -87,7 +94,7 @@ const Cart = () => {
                     <span className="font-bold text-ooty-gold">₹{getCartTotal()}</span>
                   </div>
                   <button
-                    onClick={() => alert('Proceeding to checkout...')}
+                    onClick={handleCheckout}
                     className="w-full bg-ooty-gold text-white py-3 rounded-lg font-semibold hover:bg-ooty-gold/90 transition-colors"
                   >
                     Proceed to Checkout

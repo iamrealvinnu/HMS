@@ -1,10 +1,11 @@
 import React from 'react';
 import { FaPlus, FaMinus, FaReceipt } from 'react-icons/fa';
 import { useCart } from '../components/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Cart() {
   const { cart, setCart } = useCart();
+  const navigate = useNavigate();
 
   const handleQuantityChange = (itemId, change) => {
     setCart(prevCart => {
@@ -37,6 +38,11 @@ function Cart() {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const handleCheckout = (e) => {
+    e.preventDefault();
+    navigate('/checkout');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -154,11 +160,8 @@ function Cart() {
               {/* Checkout Button */}
               <div className="p-6">
                 <button 
-                  className="w-full bg-ooty-gold text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-ooty-gold/90 transition-colors"
-                  onClick={() => {
-                    alert('Order placed successfully!');
-                    setCart([]);
-                  }}
+                  onClick={handleCheckout}
+                  className="w-full bg-ooty-gold text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-ooty-gold/90 transition-colors text-center"
                 >
                   Proceed to Checkout • ₹{total.toFixed(2)}
                 </button>

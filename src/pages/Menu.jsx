@@ -10,8 +10,12 @@ const Menu = () => {
   const categories = [
     { id: 'all', name: 'All' },
     { id: 'thali', name: 'Thali Specials' },
-    { id: 'biryani', name: 'Nilgiri Biryanis' },
+    { id: 'biryani', name: 'Biryanis' },
+    { id: 'dosa', name: 'Dosas' },
+    { id: 'meals', name: 'Meals' },
     { id: 'curries', name: 'Hill Curries' },
+    { id: 'appetizers', name: 'Appetizers' },
+    { id: 'beverages', name: 'Beverages' },
     { id: 'desserts', name: 'Desserts' }
   ];
 
@@ -36,7 +40,7 @@ const Menu = () => {
       isVeg: false,
       isSpicy: true,
       description: "Aromatic biryani with tender mutton pieces",
-      image: "/images/nilgiri biryani.webp"
+      image: "/images/mutton-biryani.jpg"
     },
     {
       id: 3,
@@ -59,6 +63,193 @@ const Menu = () => {
       isSpicy: true,
       description: "Chef's special curry with premium ingredients",
       image: "/images/ooty hill station.webp"
+    },
+    {
+      id: 5,
+      name: "Chicken Biryani",
+      category: "biryani",
+      price: "₹299",
+      rating: 4.8,
+      isVeg: false,
+      isSpicy: true,
+      description: "Aromatic basmati rice cooked with tender chicken and special spices",
+      image: "/images/chicken-biryani.jpg"
+    },
+    {
+      id: 6,
+      name: "Masala Dosa",
+      category: "dosa",
+      price: "₹149",
+      rating: 4.7,
+      isVeg: true,
+      isSpicy: false,
+      description: "Crispy dosa with spiced potato filling, served with sambar and chutneys",
+      image: "/images/masala-dosa.webp"
+    },
+    {
+      id: 7,
+      name: "Ghee Roast",
+      category: "dosa",
+      price: "₹169",
+      rating: 4.6,
+      isVeg: true,
+      isSpicy: false,
+      description: "Extra crispy dosa roasted in ghee until golden brown",
+      image: "/images/ghee-roast.jpg"
+    },
+    {
+      id: 8,
+      name: "South Indian Thali",
+      category: "meals",
+      price: "₹299",
+      rating: 4.8,
+      isVeg: true,
+      isSpicy: false,
+      description: "Complete meal with rice, dal, sambar, rasam, and 4 varieties of curries",
+      image: "/images/south-indian-thali.jpg"
+    },
+    {
+      id: 9,
+      name: "Executive Meals",
+      category: "meals",
+      price: "₹249",
+      rating: 4.5,
+      isVeg: true,
+      isSpicy: false,
+      description: "Rice, dal, 2 curries, papad, and dessert",
+      image: "/images/executive-meals.jpg"
+    },
+    {
+      id: 10,
+      name: "Chicken 65",
+      category: "appetizers",
+      price: "₹249",
+      rating: 4.7,
+      isVeg: false,
+      isSpicy: true,
+      description: "Spicy and crispy chicken fritters with curry leaves",
+      image: "/images/chicken-65.webp"
+    },
+    {
+      id: 11,
+      name: "Gobi Manchurian",
+      category: "appetizers",
+      price: "₹199",
+      rating: 4.6,
+      isVeg: true,
+      isSpicy: true,
+      description: "Crispy cauliflower in Indo-Chinese sauce",
+      image: "/images/gobi-manchurian.jpg"
+    },
+    {
+      id: 12,
+      name: "Masala Chai",
+      category: "beverages",
+      price: "₹49",
+      rating: 4.5,
+      isVeg: true,
+      isSpicy: false,
+      description: "Traditional Indian spiced tea",
+      image: "/images/masala-chai.jpg"
+    },
+    {
+      id: 13,
+      name: "Fresh Lime Soda",
+      category: "beverages",
+      price: "₹79",
+      rating: 4.4,
+      isVeg: true,
+      isSpicy: false,
+      description: "Refreshing lime soda with mint leaves",
+      image: "/images/lime-soda.jpg"
+    },
+    {
+      id: 16,
+      name: "Nilgiri Tea",
+      category: "beverages",
+      price: "₹59",
+      rating: 4.9,
+      isVeg: true,
+      isSpicy: false,
+      description: "Premium mountain-grown black tea from Ooty's finest estates",
+      image: "/images/nilgiri-tea.webp"
+    },
+    {
+      id: 17,
+      name: "Hot Chocolate",
+      category: "beverages",
+      price: "₹129",
+      rating: 4.7,
+      isVeg: true,
+      isSpicy: false,
+      description: "Rich and creamy hot chocolate perfect for Ooty's cool weather",
+      image: "/images/hot-chocolate.jpg"
+    },
+    {
+      id: 18,
+      name: "Mountain Green Tea",
+      category: "beverages",
+      price: "₹69",
+      rating: 4.6,
+      isVeg: true,
+      isSpicy: false,
+      description: "Organic green tea from local plantations with natural herbs",
+      image: "/images/green-tea.jpg"
+    },
+    {
+      id: 19,
+      name: "Nilgiri Filter Coffee",
+      category: "beverages",
+      price: "₹89",
+      rating: 4.9,
+      isVeg: true,
+      isSpicy: false,
+      description: "Traditional South Indian filter coffee made with locally sourced Nilgiri coffee beans",
+      image: "/images/filter-coffee.jpg"
+    },
+    {
+      id: 20,
+      name: "Cafe Mocha",
+      category: "beverages",
+      price: "₹149",
+      rating: 4.7,
+      isVeg: true,
+      isSpicy: false,
+      description: "Rich espresso with chocolate and steamed milk, topped with cocoa powder",
+      image: "/images/cafe-mocha.avif"
+    },
+    {
+      id: 21,
+      name: "Cold Coffee",
+      category: "beverages",
+      price: "₹129",
+      rating: 4.8,
+      isVeg: true,
+      isSpicy: false,
+      description: "Chilled blend of Nilgiri coffee with cream and ice cream",
+      image: "/images/cold-coffee.jpg"
+    },
+    {
+      id: 14,
+      name: "Gulab Jamun",
+      category: "desserts",
+      price: "₹99",
+      rating: 4.8,
+      isVeg: true,
+      isSpicy: false,
+      description: "Soft milk dumplings in sugar syrup",
+      image: "/images/gulab-jamun.jpg"
+    },
+    {
+      id: 15,
+      name: "Rasmalai",
+      category: "desserts",
+      price: "₹129",
+      rating: 4.9,
+      isVeg: true,
+      isSpicy: false,
+      description: "Soft cottage cheese dumplings in saffron milk",
+      image: "/images/rasmalai.webp"
     }
   ];
 
