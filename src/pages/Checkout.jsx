@@ -21,6 +21,22 @@ const Checkout = () => {
     cardCvv: '',
     upiId: ''
   });
+  
+  const [orderType, setOrderType] = useState(''); // Changed to empty initial state
+  const [customerDetails, setCustomerDetails] = useState({
+    fullName: '',
+    phoneNumber: '',
+    flatNo: '',
+    streetAddress: '',
+    landmark: ''
+  });
+  const [customerErrors, setCustomerErrors] = useState({
+    fullName: '',
+    phoneNumber: '',
+    flatNo: '',
+    streetAddress: '',
+    landmark: ''
+  });
 
   // Function for custom popup
   const CustomPopup = ({ message }) => (
@@ -46,7 +62,6 @@ const Checkout = () => {
     if (/^5[1-5]/.test(cleaned)) return 'mastercard';
     if (/^3[47]/.test(cleaned)) return 'amex';
     if (/^6(?:011|5)/.test(cleaned)) return 'discover';
-    // RuPay cards typically start with 60, 65, 81, 82, 508
     if (/^(60|65|81|82|508)/.test(cleaned)) return 'rupay';
     return '';
   };
@@ -72,8 +87,8 @@ const Checkout = () => {
     const price = parseFloat(item.price.replace('₹', '').replace(',', ''));
     return sum + (price * item.quantity);
   }, 0);
-  const tax = subtotal * 0.05; // 5% tax
-  const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery fee if cart has items
+  const tax = subtotal * 0.05;
+  const deliveryFee = orderType === 'delivery' && subtotal > 0 ? 40 : 0;
   const total = subtotal + tax + deliveryFee;
 
   // Format date
@@ -124,6 +139,23 @@ const Checkout = () => {
     return '';
   };
 
+  // Validation functions for customer details
+  const validateFullName = (name) => {
+    if (!name.trim()) return 'Full name is required';
+    return '';
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length !== 10) return 'Phone number must be 10 digits';
+    return '';
+  };
+
+  const validateAddressField = (field, fieldName) => {
+    if (!field.trim()) return `${fieldName} is required`;
+    return '';
+  };
+
   // Update card number with validation
   const handleCardNumberChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -167,7 +199,56 @@ const Checkout = () => {
     }));
   };
 
+  // Handle customer details changes
+  const handleCustomerDetailChange = (field) => (e) => {
+    const value = e.target.value;
+    setCustomerDetails(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    let error = '';
+    if (field === 'fullName') error = validateFullName(value);
+    if (field === 'phoneNumber') error = validatePhoneNumber(value);
+    if (orderType === 'delivery' && field === 'flatNo') error = validateAddressField(value, 'Flat number');
+    if (orderType === 'delivery' && field === 'streetAddress') error = validateAddressField(value, 'Street address');
+    if (orderType === 'delivery' && field === 'landmark') error = validateAddressField(value, 'Landmark');
+
+    setCustomerErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
+  };
+
   const handlePlaceOrder = () => {
+    if (!orderType) {
+      alert('Please select an order type');
+      return;
+    }
+
+    const nameError = validateFullName(customerDetails.fullName);
+    const phoneError = validatePhoneNumber(customerDetails.phoneNumber);
+    let deliveryErrors = {};
+
+    if (orderType === 'delivery') {
+      deliveryErrors = {
+        flatNo: validateAddressField(customerDetails.flatNo, 'Flat number'),
+        streetAddress: validateAddressField(customerDetails.streetAddress, 'Street address'),
+        landmark: validateAddressField(customerDetails.landmark, 'Landmark')
+      };
+    }
+
+    setCustomerErrors({
+      fullName: nameError,
+      phoneNumber: phoneError,
+      ...deliveryErrors
+    });
+
+    if (nameError || phoneError || Object.values(deliveryErrors).some(error => error)) {
+      alert('Please fill in all required customer details');
+      return;
+    }
+
     if (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv)) {
       alert('Please fill in all card details');
       return;
@@ -177,7 +258,6 @@ const Checkout = () => {
       return;
     }
     
-    // Show fun development message
     const messages = [
       "🚀 Oops! Our payment ninjas are still training! But your food is just a few days away from being payment-ready! 🎉",
       "👨‍💻 Our chefs are cooking up the payment system! Your delicious order will be ready to process very soon! 🍳",
@@ -191,7 +271,6 @@ const Checkout = () => {
     setShowPopup(true);
     setIsProcessing(true);
     
-    // Hide popup and redirect after 10 seconds
     setTimeout(() => {
       setShowPopup(false);
       clearCart();
@@ -299,6 +378,119 @@ const Checkout = () => {
                   <span className="text-gray-800">{formatPrice(total)}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Order Type Selection */}
+            <div className="p-6 border-b border-dashed border-gray-200">
+              <h3 className="text-sm font-medium text-gray-500 mb-4">ORDER TYPE</h3>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <button
+                  onClick={() => setOrderType('delivery')}
+                  className={`p-4 rounded-lg border ${
+                    orderType === 'delivery' 
+                      ? 'border-ooty-gold bg-ooty-gold/5 text-ooty-gold' 
+                      : 'border-gray-200 text-gray-500'
+                  } transition-colors`}
+                >
+                  <p className="text-sm">Delivery</p>
+                </button>
+                <button
+                  onClick={() => setOrderType('pickup')}
+                  className={`p-4 rounded-lg border ${
+                    orderType === 'pickup' 
+                      ? 'border-ooty-gold bg-ooty-gold/5 text-ooty-gold' 
+                      : 'border-gray-200 text-gray-500'
+                  } transition-colors`}
+                >
+                  <p className="text-sm">Pick-up</p>
+                </button>
+              </div>
+
+              {/* Customer Details - Shown only after order type selection */}
+              {orderType && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-ooty-gold focus:border-ooty-gold ${
+                        customerErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      value={customerDetails.fullName}
+                      onChange={handleCustomerDetailChange('fullName')}
+                    />
+                    {customerErrors.fullName && (
+                      <p className="text-red-500 text-xs mt-1">{customerErrors.fullName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      maxLength="10"
+                      placeholder="9876543210"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-ooty-gold focus:border-ooty-gold ${
+                        customerErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      value={customerDetails.phoneNumber}
+                      onChange={handleCustomerDetailChange('phoneNumber')}
+                    />
+                    {customerErrors.phoneNumber && (
+                      <p className="text-red-500 text-xs mt-1">{customerErrors.phoneNumber}</p>
+                    )}
+                  </div>
+                  {orderType === 'delivery' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Flat Number</label>
+                        <input
+                          type="text"
+                          placeholder="Flat 101"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-ooty-gold focus:border-ooty-gold ${
+                            customerErrors.flatNo ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          value={customerDetails.flatNo}
+                          onChange={handleCustomerDetailChange('flatNo')}
+                        />
+                        {customerErrors.flatNo && (
+                          <p className="text-red-500 text-xs mt-1">{customerErrors.flatNo}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                        <input
+                          type="text"
+                          placeholder="123 Main Street"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-ooty-gold focus:border-ooty-gold ${
+                            customerErrors.streetAddress ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          value={customerDetails.streetAddress}
+                          onChange={handleCustomerDetailChange('streetAddress')}
+                        />
+                        {customerErrors.streetAddress && (
+                          <p className="text-red-500 text-xs mt-1">{customerErrors.streetAddress}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Landmark</label>
+                        <input
+                          type="text"
+                          placeholder="Near City Park"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-ooty-gold focus:border-ooty-gold ${
+                            customerErrors.landmark ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          value={customerDetails.landmark}
+                          onChange={handleCustomerDetailChange('landmark')}
+                        />
+                        {customerErrors.landmark && (
+                          <p className="text-red-500 text-xs mt-1">{customerErrors.landmark}</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Payment Method */}
@@ -448,7 +640,7 @@ const Checkout = () => {
 
                 {paymentMethod === 'cash' && (
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Pay with cash upon delivery</p>
+                    <p className="text-sm text-gray-600">Pay with cash upon {orderType}</p>
                     <p className="text-xs text-gray-500 mt-2">Please keep exact change ready: {formatPrice(total)}</p>
                   </div>
                 )}
