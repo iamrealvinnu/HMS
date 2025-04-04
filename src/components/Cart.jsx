@@ -12,7 +12,7 @@ const Cart = () => {
 
   const handleCheckout = () => {
     setIsCartOpen(false);
-    navigate('/checkout');
+    navigate('/order-type');
   };
 
   return (
@@ -52,8 +52,8 @@ const Cart = () => {
             ) : (
               <>
                 <div className="flex-1 overflow-y-auto">
-                  {cart.map((item) => (
-                    <div key={item.name} className="flex items-center p-4 border-b">
+                  {cart.map((item, index) => (
+                    <div key={index} className="flex items-center p-4 border-b">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -61,17 +61,30 @@ const Cart = () => {
                       />
                       <div className="ml-4 flex-1">
                         <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-ooty-gold">{item.price}</p>
+                        {item.personalization && (
+                          <p className="text-sm text-gray-600">Note: {item.personalization}</p>
+                        )}
+                        {item.addOns.length > 0 && (
+                          <p className="text-sm text-gray-600">
+                            Add-ons: {item.addOns.join(', ')}
+                          </p>
+                        )}
+                        <p className="text-ooty-gold">
+                          ₹{(item.price + item.addOns.reduce((sum, addOn) => {
+                            const priceMatch = addOn.match(/₹(\d+)/);
+                            return priceMatch ? sum + parseFloat(priceMatch[1]) : sum;
+                          }, 0)).toFixed(2)}
+                        </p>
                         <div className="flex items-center mt-2">
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.name, item.quantity - 1, item.personalization, item.addOns)}
                             className="text-gray-500 hover:text-ooty-gold"
                           >
                             <FaMinus size={14} />
                           </button>
                           <span className="mx-3">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.name, item.quantity + 1, item.personalization, item.addOns)}
                             className="text-gray-500 hover:text-ooty-gold"
                           >
                             <FaPlus size={14} />
@@ -79,7 +92,7 @@ const Cart = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.name)}
+                        onClick={() => removeFromCart(item.name, item.personalization, item.addOns)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <FaTimes />
@@ -91,7 +104,7 @@ const Cart = () => {
                 <div className="border-t p-4">
                   <div className="flex justify-between mb-4">
                     <span className="font-semibold">Total:</span>
-                    <span className="font-bold text-ooty-gold">₹{getCartTotal()}</span>
+                    <span className="font-bold text-ooty-gold">₹{getCartTotal().toFixed(2)}</span>
                   </div>
                   <button
                     onClick={handleCheckout}

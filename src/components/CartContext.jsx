@@ -8,39 +8,66 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (item) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.name === item.name);
+      const newItem = {
+        ...item,
+        addOns: item.addOns || [],
+        personalization: item.notes || '',
+        price: parseFloat(item.price.replace('₹', '')),
+      };
+
+      const existingItem = prevCart.find(cartItem =>
+        cartItem.name === newItem.name &&
+        cartItem.personalization === newItem.personalization &&
+        JSON.stringify(cartItem.addOns) === JSON.stringify(newItem.addOns)
+      );
+
       if (existingItem) {
         return prevCart.map(cartItem =>
-          cartItem.name === item.name
+          cartItem.name === newItem.name &&
+          cartItem.personalization === newItem.personalization &&
+          JSON.stringify(cartItem.addOns) === JSON.stringify(newItem.addOns)
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
       }
-      return [...prevCart, { ...item, quantity: 1 }];
+
+      return [...prevCart, { ...newItem, quantity: 1 }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (itemName) => {
-    setCart(prevCart => prevCart.filter(item => item.name !== itemName));
+  const removeFromCart = (itemName, personalization, addOns) => {
+    setCart(prevCart => prevCart.filter(item =>
+      !(item.name === itemName &&
+        item.personalization === personalization &&
+        JSON.stringify(item.addOns) === JSON.stringify(addOns))
+    ));
   };
 
-  const updateQuantity = (itemName, newQuantity) => {
+  const updateQuantity = (itemName, newQuantity, personalization, addOns) => {
     if (newQuantity < 1) {
-      removeFromCart(itemName);
+      removeFromCart(itemName, personalization, addOns);
       return;
     }
     setCart(prevCart =>
       prevCart.map(item =>
-        item.name === itemName ? { ...item, quantity: newQuantity } : item
+        item.name === itemName &&
+        item.personalization === personalization &&
+        JSON.stringify(item.addOns) === JSON.stringify(addOns)
+          ? { ...item, quantity: newQuantity }
+          : item
       )
     );
   };
 
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
-      const price = parseFloat(item.price.replace('₹', ''));
-      return total + price * item.quantity;
+      const basePrice = item.price || 0;
+      const addOnsPrice = (item.addOns || []).reduce((sum, addOn) => {
+        const priceMatch = addOn.match(/₹(\d+)/);
+        return priceMatch ? sum + parseFloat(priceMatch[1]) : sum;
+      }, 0);
+      return total + (basePrice + addOnsPrice) * item.quantity;
     }, 0);
   };
 
