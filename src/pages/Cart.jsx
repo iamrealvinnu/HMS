@@ -1,177 +1,139 @@
-import React from 'react';
-import { FaPlus, FaMinus, FaReceipt } from 'react-icons/fa';
-import { useCart } from '../components/CartContext';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { FaShoppingCart, FaTimes } from 'react-icons/fa'; // Icons for cart and close buttons
+import { useCart } from './CartContext'; // Custom hook to manage cart state and actions
+import { useNavigate } from 'react-router-dom'; // Hook for programmatic navigation
 
-function Cart() {
-  const { cart, setCart } = useCart();
-  const navigate = useNavigate();
+// Cart component to display and manage items in the shopping cart
+const Cart = () => {
+  const { cart, removeFromCart, updateQuantity, setIsCartOpen } = useCart(); // Access cart data and methods from context
+  const [isCartOpen, setIsCartOpenLocal] = useState(false); // Local state to toggle cart visibility
+  const navigate = useNavigate(); // Initialize navigation function
 
-  const handleQuantityChange = (itemId, change) => {
-    setCart(prevCart => {
-      const updatedCart = prevCart.map(item => {
-        if (item.id === itemId) {
-          const newQuantity = item.quantity + change;
-          return newQuantity > 0 ? { ...item, quantity: newQuantity } : null;
-        }
-        return item;
-      }).filter(Boolean);
-      return updatedCart;
-    });
+  // Toggle cart visibility, syncing local state and context
+  const toggleCart = () => {
+    setIsCartOpenLocal(!isCartOpen); // Update local state
+    setIsCartOpen(!isCartOpen); // Update context state for consistency
   };
 
-  // Calculate totals
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.05; // 5% tax
-  const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery fee if cart has items
-  const total = subtotal + tax + deliveryFee;
+  // Calculate subtotal of all items in the cart, including add-ons
+  const subtotal = cart.reduce((sum, item) => {
+    const basePrice = parseFloat(item.price.replace('₹', '')); // Remove currency symbol and convert to number
+    const addOnsPrice = item.addOns.reduce((addSum, addOn) => {
+      const priceMatch = addOn.match(/₹(\d+)/); // Extract price from add-on string (e.g., "Ghee - ₹30")
+      return priceMatch ? addSum + parseFloat(priceMatch[1]) : addSum; // Add price if found
+    }, 0);
+    return sum + (basePrice + addOnsPrice) * item.quantity; // Multiply by quantity and add to total
+  }, 0);
 
-  // Format date
-  const today = new Date();
-  const dateString = today.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-  const timeString = today.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  const handleCheckout = (e) => {
-    e.preventDefault();
-    navigate('/checkout');
+  // Handle checkout button click: close cart and navigate to order type page
+  const handleCheckout = () => {
+    setIsCartOpenLocal(false); // Close cart locally
+    setIsCartOpen(false); // Close cart in context
+    navigate('/ordertype'); // Redirect to order type selection
   };
 
+  // Render the cart UI
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">Your Cart</h1>
-            <Link to="/menu" className="text-ooty-gold hover:text-ooty-gold/80">
-              Continue Shopping
-            </Link>
-          </div>
+    <>
+      {/* Cart toggle button */}
+      <button
+        onClick={toggleCart} // Toggle cart visibility on click
+        className="fixed top-4 right-4 bg-ooty-gold text-white p-3 rounded-full shadow-lg hover:bg-ooty-gold/90 transition-colors z-50" // Styled button with hover effect
+      >
+        <FaShoppingCart className="text-xl" /> {/* Cart icon */}
+        {cart.length > 0 && ( // Show item count badge if cart is not empty
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {cart.length} {/* Display number of items */}
+          </span>
+        )}
+      </button>
 
-          {cart.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <FaReceipt className="mx-auto text-gray-400 text-5xl mb-4" />
-              <p className="text-xl text-gray-800 mb-2">Your cart is empty</p>
-              <p className="text-gray-500 mb-6">Add some delicious items from our menu</p>
-              <Link 
-                to="/menu"
-                className="inline-block bg-ooty-gold text-white px-6 py-3 rounded-lg font-medium hover:bg-ooty-gold/90 transition-colors"
-              >
-                Browse Menu
-              </Link>
+      {/* Cart sidebar */}
+      {isCartOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end"> {/* Overlay with semi-transparent background */}
+          <div className="bg-white w-full max-w-md h-full p-6 overflow-y-auto shadow-xl"> {/* Sidebar container */}
+            <div className="flex justify-between items-center mb-6"> {/* Header with title and close button */}
+              <h2 className="text-2xl font-bold text-gray-800">Your Cart</h2> {/* Cart title */}
+              <button onClick={toggleCart} className="text-gray-600 hover:text-gray-800"> {/* Close button */}
+                <FaTimes className="text-xl" /> {/* Close icon */}
+              </button>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm">
-              {/* Receipt Header */}
-              <div className="text-center p-6 border-b border-dashed border-gray-200">
-                <h2 className="text-2xl font-bold text-ooty-gold mb-1">FusionFood</h2>
-                <p className="text-gray-600">Ooty, Tamil Nadu</p>
-                <p className="text-gray-600 text-sm">Tel: +91 98765 43210</p>
-                <div className="text-gray-500 text-xs mt-2">
-                  <p>{dateString}</p>
-                  <p>{timeString}</p>
-                </div>
-              </div>
 
-              {/* Order Items */}
-              <div className="p-6 border-b border-dashed border-gray-200">
-                <h3 className="text-sm font-medium text-gray-500 mb-4">ORDER DETAILS</h3>
-                <div className="space-y-4">
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex items-start">
-                      <img 
-                        src={item.image} 
-                        alt={item.name}
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 ml-4">
-                        <div className="flex justify-between mb-1">
-                          <div>
-                            <h4 className="font-medium text-gray-800">{item.name}</h4>
-                            <p className="text-sm text-gray-500">₹{item.price.toFixed(2)} x {item.quantity}</p>
+            {/* Cart content */}
+            {cart.length === 0 ? ( // Check if cart is empty
+              <p className="text-gray-600 text-center">Your cart is empty</p> // Empty cart message
+            ) : (
+              <>
+                <div className="space-y-6"> {/* List of cart items */}
+                  {cart.map((item, index) => {
+                    const basePrice = parseFloat(item.price.replace('₹', '')); // Extract base price
+                    const addOnsPrice = item.addOns.reduce((sum, addOn) => {
+                      const priceMatch = addOn.match(/₹(\d+)/); // Extract add-on price
+                      return priceMatch ? sum + parseFloat(priceMatch[1]) : sum; // Sum add-on prices
+                    }, 0);
+                    const totalItemPrice = (basePrice + addOnsPrice) * item.quantity; // Calculate total for this item
+
+                    return (
+                      <div key={index} className="flex items-start border-b pb-4"> {/* Individual cart item */}
+                        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" /> {/* Item image */}
+                        <div className="flex-1 ml-4"> {/* Item details */}
+                          <h3 className="font-medium text-gray-800">{item.name}</h3> {/* Item name */}
+                          <p className="text-sm text-gray-600">
+                            ₹{(basePrice + addOnsPrice).toFixed(2)} × {item.quantity} = ₹{totalItemPrice.toFixed(2)} {/* Price breakdown */}
+                          </p>
+                          {item.addOns && item.addOns.length > 0 && ( // Show add-ons if present
+                            <p className="text-xs text-gray-500">Add-ons: {item.addOns.join(', ')}</p>
+                          )}
+                          {item.notes && ( // Show notes if provided
+                            <p className="text-xs text-gray-500">Notes: {item.notes}</p>
+                          )}
+                          <div className="flex items-center mt-2"> {/* Quantity controls and remove button */}
+                            <button
+                              onClick={() => updateQuantity(item.name, item.quantity - 1, item.notes, item.addOns)} // Decrease quantity
+                              className="bg-gray-200 px-2 py-1 rounded-l-md" // Styled minus button
+                            >
+                              -
+                            </button>
+                            <span className="bg-gray-100 px-4 py-1">{item.quantity}</span> {/* Display current quantity */}
+                            <button
+                              onClick={() => updateQuantity(item.name, item.quantity + 1, item.notes, item.addOns)} // Increase quantity
+                              className="bg-gray-200 px-2 py-1 rounded-r-md" // Styled plus button
+                            >
+                              +
+                            </button>
+                            <button
+                              onClick={() => removeFromCart(item.name, item.notes, item.addOns)} // Remove item from cart
+                              className="ml-4 text-red-500 hover:text-red-700" // Styled remove button
+                            >
+                              Remove
+                            </button>
                           </div>
-                          <p className="font-medium text-gray-800">₹{(item.price * item.quantity).toFixed(2)}</p>
-                        </div>
-                        <div className="flex items-center mt-2">
-                          <button 
-                            onClick={() => handleQuantityChange(item.id, -1)}
-                            className="w-8 h-8 flex items-center justify-center text-ooty-gold border border-ooty-gold rounded-full hover:bg-ooty-gold hover:text-white transition-colors"
-                          >
-                            <FaMinus size={12} />
-                          </button>
-                          <span className="mx-4 font-medium text-gray-800">{item.quantity}</span>
-                          <button 
-                            onClick={() => handleQuantityChange(item.id, 1)}
-                            className="w-8 h-8 flex items-center justify-center text-ooty-gold border border-ooty-gold rounded-full hover:bg-ooty-gold hover:text-white transition-colors"
-                          >
-                            <FaPlus size={12} />
-                          </button>
-                          <button 
-                            onClick={() => handleQuantityChange(item.id, -item.quantity)}
-                            className="ml-auto text-sm text-red-500 hover:text-red-600"
-                          >
-                            Remove
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              </div>
 
-              {/* Bill Details */}
-              <div className="p-6 border-b border-dashed border-gray-200 bg-gray-50">
-                <h3 className="text-sm font-medium text-gray-500 mb-4">BILL DETAILS</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Item Total</span>
-                    <span className="text-gray-800">₹{subtotal.toFixed(2)}</span>
+                {/* Subtotal and checkout */}
+                <div className="mt-6"> {/* Footer section */}
+                  <div className="flex justify-between text-lg font-medium text-gray-800"> {/* Subtotal display */}
+                    <span>Subtotal</span>
+                    <span>₹{subtotal.toFixed(2)}</span> {/* Formatted subtotal */}
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">GST (5%)</span>
-                    <span className="text-gray-800">₹{tax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Delivery Fee</span>
-                    <span className="text-gray-800">₹{deliveryFee.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t border-gray-200 font-medium">
-                    <span className="text-gray-800">Grand Total</span>
-                    <span className="text-gray-800">₹{total.toFixed(2)}</span>
-                  </div>
+                  <button
+                    onClick={handleCheckout} // Proceed to checkout
+                    className="w-full mt-4 bg-ooty-gold text-white py-3 rounded-full font-semibold hover:bg-ooty-gold/90 transition-colors" // Styled checkout button
+                  >
+                    Proceed to Checkout
+                  </button>
                 </div>
-              </div>
-
-              {/* Receipt Footer */}
-              <div className="p-6 text-center text-gray-500 text-xs border-b border-dashed border-gray-200">
-                <p>Thank you for choosing FusionFood!</p>
-                <p>Visit us again</p>
-                <p className="mt-2">-- Order #{Math.floor(Math.random() * 1000000).toString().padStart(6, '0')} --</p>
-              </div>
-
-              {/* Checkout Button */}
-              <div className="p-6">
-                <button 
-                  onClick={handleCheckout}
-                  className="w-full bg-ooty-gold text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-ooty-gold/90 transition-colors text-center"
-                >
-                  Proceed to Checkout • ₹{total.toFixed(2)}
-                </button>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
-}
+};
 
-export default Cart;
+export default Cart; // Export the component for use in other parts of the app
